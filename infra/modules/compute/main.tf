@@ -34,7 +34,18 @@ resource "aws_security_group" "servidor_web" {
     to_port     = 80
     protocol    = "tcp"
     # Importante: Usar lista de IPs permitidas, NO 0.0.0.0/0
-    cidr_blocks = var.ips_permitidas
+    # cidr_blocks = var.ips_permitidas
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "HTTP - Acceso web publico"
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    # Importante: Usar lista de IPs permitidas, NO 0.0.0.0/0
+    # cidr_blocks = var.ips_permitidas
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   # Regla de salida - Permitir todo el tráfico saliente

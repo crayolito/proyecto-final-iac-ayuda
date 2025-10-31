@@ -351,6 +351,14 @@ type "%USERPROFILE%\.ssh\id_rsa"
 # Conect
 ssh -i "C:\Users\jsahonero\.ssh\mi-llave.pem" ec2-user@3.84.183.150
 
+# Desaptivar
+sudo systemctl stop nginx
+sudo systemctl disable nginx
+sudo systemctl status nginx
+
+# VVER LOGS DOCKER
+docker logs demo-microservice-lab
+
 # Aplicar cambios
 terraform apply `
   -var="public_ssh_key=$(Get-Content $env:USERPROFILE\.ssh\id_rsa.pub -Raw)" `
