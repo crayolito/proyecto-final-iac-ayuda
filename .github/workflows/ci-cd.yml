@@ -132,7 +132,7 @@ jobs:
           HOST: ${{ secrets.EC2_HOST }}
           IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/demo-microservice-lab:latest
           APP_PORT: ${{ env.APP_PORT }}
-          HOST_PORT: ${{ env.HOST_PORT }}
+          HOST_PORT: ${{ env.HOST_PORT || 8080 }}
 
         run: |
           set -euo pipefail
@@ -143,7 +143,7 @@ jobs:
           # "IMAGE='$IMAGE' APP_PORT='$APP_PORT' bash -s" -> Variables para el script
           # << 'EOF' -> Inicia el script
           ssh -o IdentitiesOnly=no -o StrictHostKeyChecking=yes \
-              ec2-user@"$HOST" "IMAGE='$IMAGE' APP_PORT='$APP_PORT' bash -s" << 'EOF'
+              ec2-user@"$HOST" "IMAGE='$IMAGE' APP_PORT='$APP_PORT' HOST_PORT='$HOST_PORT' bash -s" << 'EOF'
 
           # set -euxo pipefail -> Configuracion para parar si hay errores
           set -euxo pipefail
@@ -213,7 +213,9 @@ jobs:
           docker run -d --name demo-microservice-lab --restart unless-stopped \
             --network appnet \
             -p "$HOST_PORT":"$APP_PORT" \
-            -e REDIS_URL=redis://redis:6379 \
+            -e PORT="$APP_PORT" \
+            -e REDIS_HOST="redis" \
+            -e REDIS_PORT="6379" \
             "$IMAGE"
 
           # Verificar que los contenedores están corriend
