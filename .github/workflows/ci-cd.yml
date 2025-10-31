@@ -17,6 +17,7 @@ env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/demo-microservice-lab
   # Puerto de la aplicacion -> Si no se define, se usa el 3000
   APP_PORT: ${{ secrets.APP_PORT || 3000 }}
+  HOST_PORT: ${{ secrets.HOST_PORT || 8080 }}
 
 # Trabajo de Integracion Continua (CI) -> Build y test
 # Define todos los trabajos que va a hacer
@@ -209,7 +210,7 @@ jobs:
           # "$IMAGE" -> Nombre de la imagen
           docker run -d --name demo-microservice-lab --restart unless-stopped \
             --network appnet \
-            -p 8080:"$APP_PORT" \
+            -p "$HOST_PORT":"$APP_PORT" \
             -e REDIS_URL=redis://redis:6379 \
             "$IMAGE"
 
