@@ -209,7 +209,7 @@ jobs:
           # "$IMAGE" -> Nombre de la imagen
           docker run -d --name demo-microservice-lab --restart unless-stopped \
             --network appnet \
-            -p 80:"$APP_PORT" \
+            -p 8080:"$APP_PORT" \
             -e REDIS_URL=redis://redis:6379 \
             "$IMAGE"
 
