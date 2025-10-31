@@ -132,6 +132,8 @@ jobs:
           HOST: ${{ secrets.EC2_HOST }}
           IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/demo-microservice-lab:latest
           APP_PORT: ${{ env.APP_PORT }}
+          HOST_PORT: ${{ env.HOST_PORT }}
+
         run: |
           set -euo pipefail
           # Pasar variables al shell remoto antes de ejecutar el script

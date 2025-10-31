@@ -127,6 +127,12 @@ resource "aws_instance" "servidor_web" {
       timeout = "5m"
     }
   }
+
+  tags = merge(local.etiquetas, {
+    Name        = "instance-ec2-${var.nombre_proyecto}"
+    Descripcion = "Instancia EC2 para servidor web con nginx"
+    Tipo        = "instance-ec2"
+  })
 }
 
 # Nota importante sobre el provisioner:

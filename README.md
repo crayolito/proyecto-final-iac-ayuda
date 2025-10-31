@@ -348,6 +348,9 @@ dir "%USERPROFILE%\.ssh"
 # ver ssh privada
 type "%USERPROFILE%\.ssh\id_rsa"
 
+# Conect
+ssh -i "C:\Users\jsahonero\.ssh\mi-llave.pem" ec2-user@3.84.183.150
+
 # Aplicar cambios
 terraform apply `
   -var="public_ssh_key=$(Get-Content $env:USERPROFILE\.ssh\id_rsa.pub -Raw)" `
