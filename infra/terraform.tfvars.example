@@ -1,0 +1,20 @@
+region          = "us-east-1"
+nombre_proyecto = "proyecto-iac-basico"
+
+# Reemplaza con tus IPs /32 del equipo
+ips_permitidas = [
+  "1.2.3.4/32",
+  "5.6.7.8/32",
+  "9.10.11.12/32",
+  "13.14.15.16/32",
+  "17.18.19.20/32",
+  "21.22.23.24/32"
+]
+
+# Llave pública para crear el key pair
+public_ssh_key   = "ssh-rsa AAAA... usuario@equipo"
+private_key_path = "C:/Users/TU_USUARIO/.ssh/id_rsa"
+
+# Secrets y parámetros (opcional)
+secret_db_password_name = "proyecto-iac/database/password"
+param_app_config_path   = "/proyecto-iac/app/"
