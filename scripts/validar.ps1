@@ -1,18 +1,29 @@
-Write-Host "=== EJECUTANDO VALIDACIONES OBLIGATORIAS ===`n"
+@echo off
+echo === EJECUTANDO VALIDACIONES OBLIGATORIAS ===
+echo.
 
-Write-Host "Formateando codigo Terraform..."
+echo Formateando codigo Terraform...
 terraform -chdir=infra fmt
 
-Write-Host "Validando sintaxis de Terraform..."
+echo Validando sintaxis de Terraform...
 terraform -chdir=infra validate
-if ($LASTEXITCODE -ne 0) { exit 1 }
+if %errorlevel% neq 0 goto error
 
-Write-Host "Ejecutando TFLint para errores de estilo..."
-tflint infra
-if ($LASTEXITCODE -ne 0) { exit 1 }
+echo Ejecutando TFLint para errores de estilo...
+tflint --chdir=infra
+if %errorlevel% neq 0 goto error
 
-Write-Host "Ejecutando Checkov para escaneo de seguridad..."
+echo Ejecutando Checkov para escaneo de seguridad...
 checkov -d infra --framework terraform
-if ($LASTEXITCODE -ne 0) { exit 1 }
+if %errorlevel% neq 0 goto error
 
-Write-Host "✅ TODAS LAS VALIDACIONES PASARON CORRECTAMENTE"
+echo ✅ TODAS LAS VALIDACIONES PASARON CORRECT Estudiantes
+goto end
+
+:error
+echo ❌ ERROR: Corregir problemas antes de continuar
+pause
+exit /b 1
+
+:end
+pause
