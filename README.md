@@ -342,6 +342,12 @@ terraform init
 # Revisar plan de ejecución
 terraform plan
 
+# Ir directorio
+dir "%USERPROFILE%\.ssh"
+
+# ver ssh privada
+type "%USERPROFILE%\.ssh\id_rsa"
+
 # Aplicar cambios
 terraform apply `
   -var="public_ssh_key=$(Get-Content $env:USERPROFILE\.ssh\id_rsa.pub -Raw)" `
