@@ -82,14 +82,7 @@ resource "aws_key_pair" "this" {
   public_key = var.public_ssh_key
 }
 
-# data "aws_secretsmanager_secret_version" "db_password" {
-#   secret_id = var.secret_db_password_name
-# }
 
-# data "aws_ssm_parameter" "app_env" {
-#   name            = "${var.param_app_config_path}env"
-#   with_decryption = true
-# }
 
 # Lamada al modulo de red
 # Este modulo crea toda la infraestructura de red : VPC, subredes, Internet Gateway y tablas de rutas

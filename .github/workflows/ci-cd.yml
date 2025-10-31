@@ -1,6 +1,6 @@
 # Informacion basica del workflow
 # Nombre del workflow
-name: CI/CD - Microservicio Node.js en DOCKER desplegado en EC2
+name: CI/CD - Microservicio Node.js + Redis en DOCKER desplegado en EC2
 
 # Define cuando se ejecuta este proceso automaticamente
 on:
@@ -51,7 +51,7 @@ jobs:
         run: npm install
 
       - name: Ejecutar las pruebas
-        run: npm test
+        run: NODE_ENV=test npm test
 
       # Login y construcción de Docker
       - name: Iniciar sesion en Docker Hub
@@ -126,7 +126,7 @@ jobs:
               -o PubkeyAuthentication=yes \
               ec2-user@"$HOST" 'whoami && uname -a'
 
-      - name: Desplegar contenedor en EC2
+      - name: Desplegar contenedores en EC2 (App + Redis)
         env:
           HOST: ${{ secrets.EC2_HOST }}
           IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/demo-microservice-lab:latest
@@ -153,31 +153,69 @@ jobs:
             sudo service docker start || true
           fi
 
+          # Crear red si no existe
           # docker network inspect appnet -> Verifica si la red appnet existe
           # >/dev/null 2>&1 -> Redirige los errores a /dev/null
           # || docker network create appnet -> Si no existe, crea la red
           docker network inspect appnet >/dev/null 2>&1 || docker network create appnet
 
-          # docker ps -q --filter "name=demo-microservice-lab" -> Verifica si el contenedor demo-microservice-lab existe
+          # --- DESPLEGAR REDIS ---
+          # Detener y eliminar contenedor Redis si existe
+          # docker ps -q --filter "name=redis" -> Verifica si el contenedor redis existe
+          # | grep -q . -> Verifica si el contenedor existe
+          # && docker stop redis -> Si existe, para el contenedor
+          # || true -> Continua el proceso aunque haya un error
+          docker ps -q --filter "name=redis" | grep -q . && docker stop redis || true
+          docker ps -aq --filter "name=redis" | grep -q . && docker rm redis || true
+
+          # Crear volumen para persistencia de Redis si no existe
+          # docker volume inspect redis-data -> Verifica si el volumen redis-data existe
+          # >/dev/null 2>&1 -> Redirige los errores a /dev/null
+          # || docker volume create redis-data -> Si no existe, crea el volumen
+          docker volume inspect redis-data >/dev/null 2>&1 || docker volume create redis-data
+
+          # Iniciar contenedor Redis
+          # docker run -d --name redis --restart unless-stopped -> Crea el contenedor Redis
+          # --network appnet -> Usa la red appnet
+          # -v redis-data:/data -> Monta el volumen para persistencia
+          # redis:7-alpine redis-server --appendonly yes -> Imagen y comando para Redis
+          docker run -d --name redis --restart unless-stopped \
+            --network appnet \
+            -v redis-data:/data \
+            redis:7-alpine redis-server --appendonly yes
+
+          # Esperar a que Redis esté listo
+          sleep 3
+
+          # --- DESPLEGAR APLICACIÓN ---
+          # Detener y eliminar contenedor de la aplicación si existe
+          # docker ps -q --filter "name=demo-microservice-lab" -> Verifica si el contenedor existe
           # | grep -q . -> Verifica si el contenedor existe
           # && docker stop demo-microservice-lab -> Si existe, para el contenedor
           # || true -> Continua el proceso aunque haya un error
           docker ps -q --filter "name=demo-microservice-lab" | grep -q . && docker stop demo-microservice-lab || true
-          
-          # docker ps -aq --filter "name=demo-microservice-lab" -> Verifica si el contenedor demo-microservice-lab existe
-          # | grep -q . -> Verifica si el contenedor existe
-          # && docker rm demo-microservice-lab -> Si existe, elimina el contenedor
-          # || true -> Continua el proceso aunque haya un error
           docker ps -aq --filter "name=demo-microservice-lab" | grep -q . && docker rm demo-microservice-lab || true
 
-
+          # Descargar la imagen de la aplicación
           # docker pull "$IMAGE" -> Descarga la imagen desde Docker Hub
           # "$IMAGE" -> Nombre de la imagen
           docker pull "$IMAGE"
+
+          # Iniciar contenedor de la aplicación con conexión a Redis
           # docker run -d --name demo-microservice-lab --restart unless-stopped -> Crea el contenedor
           # --network appnet -> Usa la red appnet
-          # -p 80:"$APP_PORT" -> Mapea el puerto 80 del contenedor al puerto $APP_PORT del host
+          # -p 80:"$APP_PORT" -> Mapea el puerto 80 del host al puerto de la aplicacion
+          # -e REDIS_URL=redis://redis:6379 -> Variable de entorno para conectar con Redis
+          # "$IMAGE" -> Nombre de la imagen
           docker run -d --name demo-microservice-lab --restart unless-stopped \
-            --network appnet -p 80:"$APP_PORT" "$IMAGE"
+            --network appnet \
+            -p 80:"$APP_PORT" \
+            -e REDIS_URL=redis://redis:6379 \
+            "$IMAGE"
+
+          # Verificar que los contenedores están corriendo
+          echo "=== Contenedores activos ==="
+          docker ps --filter "name=redis" --filter "name=demo-microservice-lab"
+
           # EOF -> Fin del script
           EOF
