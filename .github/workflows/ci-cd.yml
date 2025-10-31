@@ -214,7 +214,7 @@ jobs:
             -e REDIS_URL=redis://redis:6379 \
             "$IMAGE"
 
-          # Verificar que los contenedores están corriendo
+          # Verificar que los contenedores están corriend
           echo "=== Contenedores activos ==="
           docker ps --filter "name=redis" --filter "name=demo-microservice-lab"
 
